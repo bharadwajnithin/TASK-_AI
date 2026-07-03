@@ -1,0 +1,3 @@
+app:
+  oauth:
+    google-enabled: true

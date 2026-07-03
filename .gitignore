@@ -1,0 +1,22 @@
+# Environment & secrets (never commit)
+.env
+.env.*
+!.env.example
+
+# Credentials & keys
+credentials.json
+*.pem
+*.key
+*.p12
+*.jks
+service-account*.json
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.iml
