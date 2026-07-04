@@ -16,7 +16,7 @@ AI-powered productivity platform that helps you manage tasks, extract tasks from
 - **Provider-Agnostic AI**: Support for multiple AI providers (Gemini, OpenAI, and more)
 - **Real-time Updates**: Live task status updates and notifications
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
-- **Secure by Default**: Environment-based configuration, no hardcoded secrets
+- **Secure by Default**: Environment-based configuration, no hardcoded secrets    
 
 ## 📋 Tech Stack
 
