@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import Spinner from '../components/ui/Spinner';
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user } = useAuth();    
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
