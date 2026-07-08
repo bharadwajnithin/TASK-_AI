@@ -283,7 +283,9 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - AI providers (Gemini, OpenAI) for powerful AI capabilities
 
 ## 📞 Support
-
+Nithin KS 
+bharadwajnithin666@gmail.com
+nithinks735@gmail.com
 For support, email support@omnitask.com or open an issue on GitHub.
 
 ## 🗺️ Roadmap
