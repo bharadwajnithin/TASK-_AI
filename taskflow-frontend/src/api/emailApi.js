@@ -15,7 +15,7 @@ export const emailApi = {
     api.post('/api/emails/process', { emailId, saveTasks }),
   getGmailStatus: () => api.get('/api/gmail/status'),
   disconnectGmail: () => api.delete('/api/gmail/disconnect'),
-};
+};    
 
 export const getGmailConnectUrl = () =>
   `${API_BASE || window.location.origin.replace(':5173', ':8080')}/oauth2/authorization/google-gmail`;
