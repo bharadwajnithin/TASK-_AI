@@ -27,11 +27,33 @@ public class GmailApiClient {
     private final RestClient.Builder restClientBuilder;
 
     public List<EmailMessage> fetchRecentInboxMessages(User user, int maxResults, String fromEmail) {
+        return fetchRecentInboxMessages(user, maxResults, List.of(fromEmail));
+    }
+
+    public List<EmailMessage> fetchRecentInboxMessages(User user, int maxResults, List<String> fromEmails) {
+        if (fromEmails == null || fromEmails.isEmpty()) {
+            throw new IllegalArgumentException("At least one sender email address is required to sync inbox");
+        }
+
+        List<String> sanitizedEmails = fromEmails.stream()
+                .map(this::sanitizeFromEmail)
+                .distinct()
+                .toList();
+
+        String query;
+        if (sanitizedEmails.size() == 1) {
+            query = "in:inbox from:" + sanitizedEmails.get(0);
+        } else {
+            String sendersQuery = sanitizedEmails.stream()
+                    .map(email -> "from:" + email)
+                    .collect(java.util.stream.Collectors.joining(" OR "));
+            query = "in:inbox (" + sendersQuery + ")";
+        }
+
         String accessToken = gmailTokenService.getValidAccessToken(user);
-        String query = "in:inbox from:" + sanitizeFromEmail(fromEmail);
 
         try {
-            RestClient client = restClientBuilder
+            RestClient client = RestClient.builder()
                     .baseUrl(GMAIL_BASE)
                     .defaultHeader("Authorization", "Bearer " + accessToken)
                     .build();

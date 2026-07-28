@@ -32,6 +32,7 @@ public class GmailService {
                 .unprocessedCount(emailMessageRepository.countByUserIdAndProcessedFalse(userId))
                 .connectUrl(connectUrl)
                 .syncFromEmail(user.getGmailSyncFromEmail())
+                .syncFromEmails(user.getGmailSyncFromEmailsList())
                 .build();
     }
 

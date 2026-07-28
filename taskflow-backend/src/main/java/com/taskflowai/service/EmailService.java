@@ -47,15 +47,43 @@ public class EmailService {
     }
 
     public SyncResult syncGmailInbox(String userId, int maxResults, String fromEmail) {
+        if (!StringUtils.hasText(fromEmail)) {
+            throw new IllegalArgumentException("Sender email address is required to sync inbox");
+        }
+        List<String> emailList = java.util.Arrays.stream(fromEmail.split(","))
+                .map(String::trim)
+                .filter(StringUtils::hasText)
+                .toList();
+        return syncGmailInbox(userId, maxResults, emailList);
+    }
+
+    public SyncResult syncGmailInbox(String userId, int maxResults, List<String> fromEmails) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        String normalizedFromEmail = normalizeFromEmail(fromEmail);
-        user.setGmailSyncFromEmail(normalizedFromEmail);
+        if (fromEmails == null || fromEmails.isEmpty()) {
+            throw new IllegalArgumentException("Sender email address is required to sync inbox");
+        }
+
+        List<String> normalizedList = fromEmails.stream()
+                .filter(StringUtils::hasText)
+                .map(this::normalizeFromEmail)
+                .distinct()
+                .toList();
+
+        if (normalizedList.isEmpty()) {
+            throw new IllegalArgumentException("At least one valid sender email address is required");
+        }
+        if (normalizedList.size() > 4) {
+            throw new IllegalArgumentException("You can configure a maximum of 4 client sender email addresses");
+        }
+
+        user.setGmailSyncFromEmails(normalizedList);
+        user.setGmailSyncFromEmail(normalizedList.get(0));
         userRepository.save(user);
 
         List<EmailMessage> fetched =
-                gmailApiClient.fetchRecentInboxMessages(user, maxResults, normalizedFromEmail);
+                gmailApiClient.fetchRecentInboxMessages(user, maxResults, normalizedList);
         int imported = 0;
 
         for (EmailMessage email : fetched) {
@@ -65,7 +93,7 @@ public class EmailService {
             }
         }
 
-        return new SyncResult(imported, normalizedFromEmail);
+        return new SyncResult(imported, normalizedList);
     }
 
     private String normalizeFromEmail(String fromEmail) {
@@ -74,12 +102,12 @@ public class EmailService {
         }
         String trimmed = fromEmail.trim().toLowerCase();
         if (!trimmed.matches("^[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$")) {
-            throw new IllegalArgumentException("Invalid sender email address");
+            throw new IllegalArgumentException("Invalid sender email address: " + fromEmail);
         }
         return trimmed;
     }
 
-    public record SyncResult(int imported, String fromEmail) {}
+    public record SyncResult(int imported, List<String> fromEmails) {}
 
     public ProcessEmailResponse processEmail(String userId, ProcessEmailRequest request) {
         EmailMessage email = emailMessageRepository.findByIdAndUserId(request.getEmailId(), userId)

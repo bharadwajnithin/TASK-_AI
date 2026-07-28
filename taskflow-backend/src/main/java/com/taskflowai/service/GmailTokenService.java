@@ -59,6 +59,7 @@ public class GmailTokenService {
         user.setGmailRefreshToken(null);
         user.setGmailTokenExpiry(null);
         user.setGmailSyncFromEmail(null);
+        user.setGmailSyncFromEmails(new java.util.ArrayList<>());
         userRepository.save(user);
     }
 
@@ -70,7 +71,7 @@ public class GmailTokenService {
         form.add("grant_type", "refresh_token");
 
         try {
-            String responseBody = restClientBuilder.build()
+            String responseBody = RestClient.builder().build()
                     .post()
                     .uri("https://oauth2.googleapis.com/token")
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)

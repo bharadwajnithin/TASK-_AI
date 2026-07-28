@@ -84,7 +84,7 @@ public class OpenAiProvider implements AiProvider {
                 .build();
 
         try {
-            RestClient client = restClientBuilder
+            RestClient client = RestClient.builder()
                     .baseUrl(baseUrl)
                     .defaultHeader("Authorization", "Bearer " + apiKey)
                     .build();

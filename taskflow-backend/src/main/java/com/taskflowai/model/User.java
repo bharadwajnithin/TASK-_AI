@@ -50,6 +50,19 @@ public class User {
 
     private String gmailSyncFromEmail;
 
+    @Builder.Default
+    private java.util.List<String> gmailSyncFromEmails = new java.util.ArrayList<>();
+
+    public java.util.List<String> getGmailSyncFromEmailsList() {
+        if (gmailSyncFromEmails != null && !gmailSyncFromEmails.isEmpty()) {
+            return gmailSyncFromEmails;
+        }
+        if (org.springframework.util.StringUtils.hasText(gmailSyncFromEmail)) {
+            return java.util.List.of(gmailSyncFromEmail);
+        }
+        return java.util.Collections.emptyList();
+    }
+
     @CreatedDate
     private Instant createdAt;
 

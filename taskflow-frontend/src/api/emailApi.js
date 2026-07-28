@@ -4,8 +4,13 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
 export const emailApi = {
   getEmails: (params) => api.get('/api/emails', { params }),
-  syncEmails: (fromEmail, maxResults = 20) =>
-    api.post(`/api/emails/sync?fromEmail=${encodeURIComponent(fromEmail)}&maxResults=${maxResults}`),
+  syncEmails: (fromEmails, maxResults = 20) => {
+    const list = Array.isArray(fromEmails) ? fromEmails : [fromEmails];
+    const params = new URLSearchParams();
+    list.forEach((email) => params.append('fromEmails', email));
+    params.append('maxResults', maxResults.toString());
+    return api.post(`/api/emails/sync?${params.toString()}`);
+  },
   processEmail: (emailId, saveTasks = true) =>
     api.post('/api/emails/process', { emailId, saveTasks }),
   getGmailStatus: () => api.get('/api/gmail/status'),

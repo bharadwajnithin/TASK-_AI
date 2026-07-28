@@ -85,13 +85,13 @@ public class GeminiAiProvider implements AiProvider {
                 .build();
 
         try {
-            RestClient client = restClientBuilder
+            RestClient client = RestClient.builder()
                     .baseUrl(baseUrl)
-                    .defaultHeader("x-goog-api-key", apiKey)
                     .build();
 
             GeminiResponse response = client.post()
                     .uri("/models/{model}:generateContent", model)
+                    .header("x-goog-api-key", apiKey)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(request)
                     .retrieve()

@@ -40,13 +40,31 @@ public class EmailController {
 
     @PostMapping("/sync")
     public ResponseEntity<Map<String, Object>> syncEmails(
-            @RequestParam String fromEmail,
+            @RequestParam(required = false) String fromEmail,
+            @RequestParam(required = false) java.util.List<String> fromEmails,
             @RequestParam(defaultValue = "20") int maxResults) {
         String userId = SecurityUtils.getCurrentUserId();
-        EmailService.SyncResult result = emailService.syncGmailInbox(userId, maxResults, fromEmail);
+
+        java.util.List<String> targetEmails = new java.util.ArrayList<>();
+        if (fromEmails != null && !fromEmails.isEmpty()) {
+            targetEmails.addAll(fromEmails);
+        } else if (org.springframework.util.StringUtils.hasText(fromEmail)) {
+            for (String s : fromEmail.split(",")) {
+                if (org.springframework.util.StringUtils.hasText(s)) {
+                    targetEmails.add(s.trim());
+                }
+            }
+        }
+
+        if (targetEmails.isEmpty()) {
+            throw new IllegalArgumentException("At least one sender email address is required");
+        }
+
+        EmailService.SyncResult result = emailService.syncGmailInbox(userId, maxResults, targetEmails);
+        String sendersLabel = String.join(", ", result.fromEmails());
         return ResponseEntity.ok(Map.of(
                 "imported", result.imported(),
-                "fromEmail", result.fromEmail(),
-                "message", result.imported() + " new email(s) imported from " + result.fromEmail()));
+                "fromEmails", result.fromEmails(),
+                "message", result.imported() + " new email(s) imported from " + sendersLabel));
     }
 }

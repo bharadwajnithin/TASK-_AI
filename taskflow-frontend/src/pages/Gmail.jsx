@@ -1,4 +1,4 @@
-import { Mail, RefreshCw, Sparkles, Unplug, Wand2 } from 'lucide-react';
+import { Mail, Plus, RefreshCw, Sparkles, Unplug, Wand2, X } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { extractApiError } from '../api/authApi';
@@ -15,7 +15,8 @@ export default function Gmail() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [processingId, setProcessingId] = useState(null);
-  const [syncFromEmail, setSyncFromEmail] = useState('');
+  const [syncFromEmails, setSyncFromEmails] = useState([]);
+  const [newEmail, setNewEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -31,9 +32,13 @@ export default function Gmail() {
       ]);
       setStatus(statusRes.data);
       setEmails(emailsRes.data.content || []);
-      if (statusRes.data.syncFromEmail) {
-        setSyncFromEmail(statusRes.data.syncFromEmail);
-      }
+      const loadedSenders =
+        statusRes.data.syncFromEmails?.length > 0
+          ? statusRes.data.syncFromEmails
+          : statusRes.data.syncFromEmail
+          ? [statusRes.data.syncFromEmail]
+          : [];
+      setSyncFromEmails(loadedSenders);
     } catch (err) {
       setError(extractApiError(err));
     } finally {
@@ -53,10 +58,54 @@ export default function Gmail() {
     window.location.href = getGmailConnectUrl();
   };
 
+  const handleAddSender = (e) => {
+    if (e) e.preventDefault();
+    const trimmed = newEmail.trim().toLowerCase();
+    if (!trimmed) return;
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (syncFromEmails.includes(trimmed)) {
+      setError('This email address is already added.');
+      return;
+    }
+
+    if (syncFromEmails.length >= 4) {
+      setError('You can add a maximum of 4 client sender email addresses.');
+      return;
+    }
+
+    setError('');
+    setSyncFromEmails((prev) => [...prev, trimmed]);
+    setNewEmail('');
+  };
+
+  const handleRemoveSender = (emailToRemove) => {
+    setSyncFromEmails((prev) => prev.filter((item) => item !== emailToRemove));
+  };
+
   const handleSync = async () => {
-    const fromEmail = syncFromEmail.trim();
-    if (!fromEmail) {
-      setError('Enter the client email address to sync emails from.');
+    let currentSenders = [...syncFromEmails];
+
+    // Auto-add text from newEmail field if user typed an email but didn't click Add
+    if (newEmail.trim()) {
+      const trimmed = newEmail.trim().toLowerCase();
+      if (
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) &&
+        !currentSenders.includes(trimmed) &&
+        currentSenders.length < 4
+      ) {
+        currentSenders.push(trimmed);
+        setSyncFromEmails(currentSenders);
+        setNewEmail('');
+      }
+    }
+
+    if (currentSenders.length === 0) {
+      setError('Add at least one client email address to sync emails from.');
       return;
     }
 
@@ -64,7 +113,7 @@ export default function Gmail() {
     setError('');
     setSuccess('');
     try {
-      const { data } = await emailApi.syncEmails(fromEmail, 20);
+      const { data } = await emailApi.syncEmails(currentSenders, 20);
       setSuccess(data.message || 'Emails synced');
       await loadData();
     } catch (err) {
@@ -127,9 +176,13 @@ export default function Gmail() {
             </Button>
           ) : (
             <>
-              <Button onClick={handleSync} loading={syncing} disabled={!syncFromEmail.trim()}>
+              <Button
+                onClick={handleSync}
+                loading={syncing}
+                disabled={syncFromEmails.length === 0 && !newEmail.trim()}
+              >
                 <RefreshCw className="h-4 w-4" />
-                Sync from sender
+                Sync from senders ({syncFromEmails.length})
               </Button>
               <Button variant="secondary" onClick={handleDisconnect}>
                 <Unplug className="h-4 w-4" />
@@ -168,17 +221,64 @@ export default function Gmail() {
           </p>
         )}
         {status?.connected && (
-          <div className="mt-4 border-t border-slate-100 pt-4">
-            <Input
-              id="sync-from-email"
-              label="Sync emails from (client sender address)"
-              type="email"
-              value={syncFromEmail}
-              onChange={(e) => setSyncFromEmail(e.target.value)}
-              placeholder="client@company.com"
-            />
-            <p className="mt-2 text-xs text-slate-500">
-              Only inbox emails from this sender will be imported when you sync.
+          <div className="mt-5 border-t border-slate-100 pt-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-medium text-slate-700">
+                Sync emails from (client sender addresses - up to 4)
+              </label>
+              <span className="text-xs font-medium text-slate-500">
+                {syncFromEmails.length}/4 senders added
+              </span>
+            </div>
+
+            {/* List of active sender chips */}
+            {syncFromEmails.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {syncFromEmails.map((email) => (
+                  <span
+                    key={email}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold text-brand-700 shadow-xs"
+                  >
+                    <Mail className="h-3.5 w-3.5 text-brand-500" />
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSender(email)}
+                      className="ml-0.5 rounded-full p-0.5 text-brand-600 transition-colors hover:bg-brand-100 hover:text-brand-800"
+                      title="Remove sender"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {/* Input to add a new sender */}
+            {syncFromEmails.length < 4 ? (
+              <form onSubmit={handleAddSender} className="flex gap-2">
+                <div className="flex-1">
+                  <Input
+                    id="new-client-sender-email"
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    placeholder="client@company.com"
+                  />
+                </div>
+                <Button type="submit" variant="secondary" disabled={!newEmail.trim()}>
+                  <Plus className="h-4 w-4" />
+                  Add Sender
+                </Button>
+              </form>
+            ) : (
+              <p className="rounded-lg border border-amber-200 bg-amber-50 p-2.5 text-xs font-medium text-amber-600">
+                Maximum of 4 client senders configured. Remove one above to add a new sender address.
+              </p>
+            )}
+
+            <p className="text-xs text-slate-500">
+              Only inbox emails from these client sender addresses will be imported when you sync.
             </p>
           </div>
         )}
@@ -194,16 +294,21 @@ export default function Gmail() {
             <Sparkles className="mx-auto h-8 w-8 text-slate-300" />
             <p className="mt-2 text-sm text-slate-500">
               {status?.connected
-                ? 'Enter a client email above, then click Sync from sender.'
+                ? 'Add client email addresses above, then click Sync from senders.'
                 : 'Connect Gmail to import emails.'}
             </p>
           </div>
         ) : (
           <ul className="divide-y divide-slate-100">
             {emails.map((email) => (
-              <li key={email.id} className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <li
+                key={email.id}
+                className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between"
+              >
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium text-slate-900">{email.subject || '(No subject)'}</p>
+                  <p className="truncate font-medium text-slate-900">
+                    {email.subject || '(No subject)'}
+                  </p>
                   <p className="truncate text-sm text-slate-500">{email.sender}</p>
                   <p className="mt-1 line-clamp-2 text-sm text-slate-600">{email.body}</p>
                 </div>
