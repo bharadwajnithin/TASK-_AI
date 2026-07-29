@@ -39,6 +39,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final AppProperties appProperties;
     private final OAuth2AuthorizedClientService authorizedClientService;
     private final GmailTokenService gmailTokenService;
+    private final HttpCookieOAuth2AuthorizationRequestRepository httpCookieOAuth2AuthorizationRequestRepository;
 
     @Override
     public void onAuthenticationSuccess(
@@ -51,6 +52,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         Map<String, Object> attributes = oauth2User.getAttributes();
 
         String email = String.valueOf(attributes.get("email")).toLowerCase().trim();
+
+        httpCookieOAuth2AuthorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
 
         if ("google-gmail".equals(oauthToken.getAuthorizedClientRegistrationId())) {
             handleGmailConnect(request, response, oauthToken, email);

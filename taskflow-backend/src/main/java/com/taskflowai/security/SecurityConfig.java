@@ -37,6 +37,9 @@ public class SecurityConfig {
     @Autowired(required = false)
     private OAuth2AuthorizationRequestResolver authorizationRequestResolver;
 
+    @Autowired(required = false)
+    private HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository;
+
     private static final String[] PUBLIC_ENDPOINTS = {
             "/api/auth/**",
             "/oauth2/**",
@@ -59,11 +62,15 @@ public class SecurityConfig {
 
         if (appProperties.getOauth().isGoogleEnabled() && oAuth2SuccessHandler != null) {
             http.oauth2Login(oauth2 -> {
+                oauth2.authorizationEndpoint(endpoint -> {
+                    if (cookieAuthorizationRequestRepository != null) {
+                        endpoint.authorizationRequestRepository(cookieAuthorizationRequestRepository);
+                    }
+                    if (authorizationRequestResolver != null) {
+                        endpoint.authorizationRequestResolver(authorizationRequestResolver);
+                    }
+                });
                 oauth2.successHandler(oAuth2SuccessHandler);
-                if (authorizationRequestResolver != null) {
-                    oauth2.authorizationEndpoint(endpoint ->
-                            endpoint.authorizationRequestResolver(authorizationRequestResolver));
-                }
             });
         }
 
