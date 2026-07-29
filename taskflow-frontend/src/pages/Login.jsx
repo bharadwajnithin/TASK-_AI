@@ -26,7 +26,7 @@ export default function Login() {
       .catch(() =>
         setGoogleOAuth({
           enabled: false,
-          message: 'Cannot reach backend. Start the server with .\\run.ps1 on port 8080.',
+          message: 'Unable to reach backend server. If using Vercel, ensure VITE_API_BASE_URL environment variable is set in Vercel settings.',
         })
       );
   }, []);

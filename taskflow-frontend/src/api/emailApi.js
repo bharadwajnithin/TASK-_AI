@@ -22,5 +22,8 @@ export const getGmailConnectUrl = () => {
   if (API_BASE) {
     return `${API_BASE}/oauth2/authorization/google-gmail`;
   }
-  return `${window.location.origin.replace(':5173', ':8080')}/oauth2/authorization/google-gmail`;
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return `${window.location.origin.replace(':5173', ':8080')}/oauth2/authorization/google-gmail`;
+  }
+  return '/oauth2/authorization/google-gmail';
 };
