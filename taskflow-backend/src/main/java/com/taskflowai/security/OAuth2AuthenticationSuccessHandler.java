@@ -93,7 +93,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     expiresIn);
         }
 
-        String redirectUrl = appProperties.getFrontendUrl() + "/gmail?connected=true";
+        String baseUrl = getTargetFrontendUrl(request);
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+        String redirectUrl = baseUrl + "/gmail?connected=true";
         log.info("Gmail connected for user: {}", email);
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
     }
@@ -117,15 +121,27 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         CustomUserDetails userDetails = new CustomUserDetails(user);
         String token = jwtService.generateToken(userDetails);
 
+        String baseUrl = getTargetFrontendUrl(request);
+        if (baseUrl.endsWith("/")) {
+            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+        }
+
         String redirectUrl = UriComponentsBuilder
-                .fromUriString(appProperties.getFrontendUrl() + "/oauth/callback")
+                .fromUriString(baseUrl + "/oauth/callback")
                 .queryParam("token", token)
                 .queryParam("expiresIn", jwtService.getExpirationMs())
                 .build()
                 .toUriString();
 
-        log.info("Google OAuth success for user: {}", email);
+        log.info("Google OAuth success for user: {}, redirecting to {}", email, redirectUrl);
         getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+    }
+
+    private String getTargetFrontendUrl(HttpServletRequest request) {
+        return CookieUtils.getCookie(request, HttpCookieOAuth2AuthorizationRequestRepository.REDIRECT_URI_PARAM_COOKIE_NAME)
+                .map(jakarta.servlet.http.Cookie::getValue)
+                .filter(org.springframework.util.StringUtils::hasText)
+                .orElseGet(() -> appProperties.getFrontendUrl());
     }
 
     private User findOrCreateOAuthUser(String googleId, String email, String fullName, String picture) {

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.SerializationUtils;
 import org.springframework.util.StringUtils;
 
+import java.net.URI;
 import java.util.Base64;
 
 @Component
@@ -45,6 +46,16 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
                 isSecure);
 
         String redirectUriAfterLogin = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME);
+        if (!StringUtils.hasText(redirectUriAfterLogin)) {
+            String referer = request.getHeader("Referer");
+            if (StringUtils.hasText(referer)) {
+                try {
+                    URI uri = URI.create(referer);
+                    redirectUriAfterLogin = uri.getScheme() + "://" + uri.getAuthority();
+                } catch (Exception ignored) {}
+            }
+        }
+
         if (StringUtils.hasText(redirectUriAfterLogin)) {
             CookieUtils.addCookie(
                     response,
