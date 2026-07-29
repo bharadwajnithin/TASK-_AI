@@ -7,8 +7,13 @@ export const authApi = {
   getGoogleOAuthInfo: () => api.get('/api/auth/google'),
 };
 
-export const getGoogleOAuthUrl = () =>
-  import.meta.env.VITE_GOOGLE_OAUTH_URL || '/oauth2/authorization/google';
+export const getGoogleOAuthUrl = () => {
+  if (import.meta.env.VITE_GOOGLE_OAUTH_URL) {
+    return import.meta.env.VITE_GOOGLE_OAUTH_URL;
+  }
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+  return `${API_BASE}/oauth2/authorization/google`;
+};
 
 export const extractApiError = (error) => {
   const data = error.response?.data;

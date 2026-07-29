@@ -17,5 +17,10 @@ export const emailApi = {
   disconnectGmail: () => api.delete('/api/gmail/disconnect'),
 };    
 
-export const getGmailConnectUrl = () =>
-  `${API_BASE || window.location.origin.replace(':5173', ':8080')}/oauth2/authorization/google-gmail`;
+export const getGmailConnectUrl = () => {
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
+  if (API_BASE) {
+    return `${API_BASE}/oauth2/authorization/google-gmail`;
+  }
+  return `${window.location.origin.replace(':5173', ':8080')}/oauth2/authorization/google-gmail`;
+};
