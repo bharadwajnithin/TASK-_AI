@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { CheckCircle2, ExternalLink, RefreshCw, Server } from 'lucide-react';
 import { authApi, getGoogleOAuthUrl } from '../api/authApi';
 import AuthLayout from '../components/auth/AuthLayout';
 import Alert from '../components/ui/Alert';
@@ -16,20 +17,57 @@ export default function Login() {
   const [apiError, setApiError] = useState('');
   const [loading, setLoading] = useState(false);
   const [googleOAuth, setGoogleOAuth] = useState({ enabled: false, message: '' });
+  const [wakingServer, setWakingServer] = useState(false);
+  const [wakeSuccess, setWakeSuccess] = useState(false);
 
   const sessionExpired = searchParams.get('session') === 'expired';
 
+  const checkOAuthStatus = async () => {
+    try {
+      const { data } = await authApi.getGoogleOAuthInfo();
+      setGoogleOAuth(data);
+      return true;
+    } catch {
+      setGoogleOAuth({
+        enabled: false,
+        message: 'Unable to reach backend server. If using Vercel, ensure VITE_API_BASE_URL environment variable is set in Vercel settings.',
+      });
+      return false;
+    }
+  };
+
   useEffect(() => {
-    authApi
-      .getGoogleOAuthInfo()
-      .then(({ data }) => setGoogleOAuth(data))
-      .catch(() =>
-        setGoogleOAuth({
-          enabled: false,
-          message: 'Unable to reach backend server. If using Vercel, ensure VITE_API_BASE_URL environment variable is set in Vercel settings.',
-        })
-      );
+    checkOAuthStatus();
   }, []);
+
+  const handleWakeUpServer = async () => {
+    setWakingServer(true);
+    setWakeSuccess(false);
+
+    const RENDER_LOGIN_URL = 'https://task-ai-74al.onrender.com/login';
+
+    try {
+      fetch(RENDER_LOGIN_URL, { mode: 'no-cors' }).catch(() => {});
+    } catch {
+      // Ignore fetch errors
+    }
+
+    window.open(RENDER_LOGIN_URL, '_blank', 'noopener,noreferrer');
+
+    let attempts = 0;
+    const interval = setInterval(async () => {
+      attempts += 1;
+      const isAwake = await checkOAuthStatus();
+      if (isAwake || attempts >= 10) {
+        clearInterval(interval);
+        setWakingServer(false);
+        if (isAwake) {
+          setWakeSuccess(true);
+          setTimeout(() => setWakeSuccess(false), 5000);
+        }
+      }
+    }, 3000);
+  };
 
   const validate = () => {
     const next = {};
@@ -144,6 +182,46 @@ export default function Login() {
         </svg>
         Continue with Google
       </Button>
+
+      <div className="mt-3 flex items-center justify-end">
+        <button
+          type="button"
+          onClick={handleWakeUpServer}
+          disabled={wakingServer}
+          title="Click to wake up backend if Google Login is disabled or loading"
+          className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600 shadow-sm transition hover:bg-slate-100 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1 disabled:opacity-50"
+        >
+          {wakingServer ? (
+            <>
+              <RefreshCw className="h-3.5 w-3.5 animate-spin text-brand-600" />
+              <span>Waking server...</span>
+            </>
+          ) : wakeSuccess ? (
+            <>
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+              <span className="text-emerald-700 font-semibold">Server Ready!</span>
+            </>
+          ) : (
+            <>
+              <span className="relative flex h-2 w-2">
+                <span
+                  className={`absolute inline-flex h-full w-full animate-ping rounded-full ${
+                    googleOAuth.enabled ? 'bg-emerald-400 opacity-75' : 'bg-amber-400 opacity-75'
+                  }`}
+                />
+                <span
+                  className={`relative inline-flex h-2 w-2 rounded-full ${
+                    googleOAuth.enabled ? 'bg-emerald-500' : 'bg-amber-500'
+                  }`}
+                />
+              </span>
+              <Server className="h-3.5 w-3.5 text-slate-500" />
+              <span>{googleOAuth.enabled ? 'Server Active' : 'Wake Up Server'}</span>
+              <ExternalLink className="h-3 w-3 text-slate-400" />
+            </>
+          )}
+        </button>
+      </div>
 
       <p className="mt-6 text-center text-sm text-slate-600">
         Don&apos;t have an account?{' '}
