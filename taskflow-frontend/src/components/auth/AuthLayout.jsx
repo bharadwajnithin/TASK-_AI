@@ -9,7 +9,7 @@ export default function AuthLayout({ children, title, subtitle }) {
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur">
             <Sparkles className="h-6 w-6" />
           </div>
-          <span className="text-xl font-bold">OMNITASK</span>
+          <span className="text-xl font-bold">Task AI</span>
         </div>
         <div>
           <h1 className="text-4xl font-bold leading-tight">
@@ -20,14 +20,14 @@ export default function AuthLayout({ children, title, subtitle }) {
             and actionable tasks automatically.
           </p>
         </div>
-        <p className="text-sm text-indigo-300">© 2026 OMNITASK</p>
+        <p className="text-sm text-indigo-300">© 2026 Task AI</p>
       </div>
 
       <div className="flex w-full flex-col justify-center px-6 py-12 lg:w-1/2 lg:px-16">
         <div className="mb-8 lg:hidden">
           <Link to="/" className="flex items-center gap-2 text-brand-600">
             <Sparkles className="h-6 w-6" />
-            <span className="font-bold">OMNITASK</span>
+            <span className="font-bold">Task AI</span>
           </Link>
         </div>
         <div className="mx-auto w-full max-w-md">

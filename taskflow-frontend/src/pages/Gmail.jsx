@@ -138,7 +138,7 @@ export default function Gmail() {
   };
 
   const handleDisconnect = async () => {
-    if (!window.confirm('Disconnect Gmail from OMNITASK?')) return;
+    if (!window.confirm('Disconnect Gmail from Task AI?')) return;
     try {
       await emailApi.disconnectGmail();
       setSuccess('Gmail disconnected.');
@@ -216,7 +216,7 @@ export default function Gmail() {
         </div>
         {!status?.connected && (
           <p className="mt-3 text-sm text-slate-600">
-            Use the same Google email as your OMNITASK account. Enable Google OAuth in backend
+            Use the same Google email as your Task AI account. Enable Google OAuth in backend
             with <code className="rounded bg-slate-100 px-1">GOOGLE_OAUTH_ENABLED=true</code>.
           </p>
         )}

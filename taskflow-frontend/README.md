@@ -1,4 +1,4 @@
-# OMNITASK — Frontend
+# Task AI — Frontend
 
 React + Vite frontend with **JWT authentication**, **Google OAuth**, and a responsive app shell.
 

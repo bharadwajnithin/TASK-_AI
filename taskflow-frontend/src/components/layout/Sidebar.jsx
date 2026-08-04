@@ -39,7 +39,7 @@ export default function Sidebar({ mobileOpen, onClose }) {
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <p className="text-sm font-bold text-slate-900">OMNITASK</p>
+            <p className="text-sm font-bold text-slate-900">Task AI</p>
             <p className="text-xs text-slate-500">Productivity SaaS</p>
           </div>
         </div>
