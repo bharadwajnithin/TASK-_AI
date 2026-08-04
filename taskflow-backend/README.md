@@ -1,4 +1,4 @@
-# OMNITASK — Backend
+# Task AI — Backend
 
 AI-powered productivity platform backend built with **Java 21**, **Spring Boot 3**, **MongoDB**, and **JWT** authentication.
 

@@ -25,7 +25,7 @@ import java.util.Map;
 public class OpenAiProvider implements AiProvider {
 
     private static final String SYSTEM_PROMPT = """
-            You are an AI assistant for a project management SaaS called OMNITASK.
+            You are an AI assistant for a project management SaaS called Task AI.
             Extract actionable tasks from client communications (emails, chats, notes).
 
             Rules:
