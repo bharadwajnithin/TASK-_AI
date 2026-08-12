@@ -2,6 +2,7 @@
 
 AI-powered productivity platform backend built with **Java 21**, **Spring Boot 3**, **MongoDB**, and **JWT** authentication.
 
+
 ## Features
 
 - User registration & login with JWT authentication
