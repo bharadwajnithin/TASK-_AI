@@ -1,4 +1,4 @@
-# OMNITASK
+# TASK AI 
    
 An AI-powered productivity platform that automates task extraction from text, Gmail, and WhatsApp chats, paired with smart analytics.
 
