@@ -9,7 +9,7 @@ An AI-powered productivity platform that automates task extraction from text, Gm
 - **Integrations**: Sync tasks via Gmail and WhatsApp imports.
 - **Analytics & Auth**: Dashboard metrics, JWT authentication, and Google OAuth support.
 
-## 🛠️ Tech Stack
+## 🛠️ Tech Stack 
 
 - **Backend**: Java 21, Spring Boot 3.3, MongoDB, Spring Security, JWT, Google OAuth.
 - **Frontend**: React 18, Vite 6, Tailwind CSS 3, Lucide React.
