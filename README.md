@@ -40,6 +40,5 @@ Runs on `http://localhost:5173`
 - **Backend** (`taskflow-backend/.env`): `MONGODB_URI`, `JWT_SECRET`, `AI_PROVIDER`, `AI_API_KEY`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
 - **Frontend** (`taskflow-frontend/.env`): `VITE_API_BASE_URL`, `VITE_GOOGLE_OAUTH_URL`
 
-## 📄 License
-
-[MIT](LICENSE)
+ contact : 
+ Name :Nithin K S
